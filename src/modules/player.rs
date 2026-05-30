@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
-const PLAYER_SPEED: f32 = 100.0;
+const PLAYER_SPEED: f32 = 200.0;
 const CAMERA_DECAY_RATE: f32 = 5.0;
+pub const PLAYER_SIZE: f32 = 24.0;
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 pub struct PlayerPlugin;
 
@@ -15,16 +16,15 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn setup(mut commands: Commands) {
     // Spawn the fool
     commands.spawn((
         Player,
-        Mesh2d(meshes.add(Circle::new(10.0))),
-        MeshMaterial2d(materials.add(Color::hsl(350.0, 0.75, 0.75))),
+        Sprite {
+            custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+            color: Color::hsl(350.0, 0.75, 0.75),
+            ..default()
+        },
         Transform::from_translation(Vec3::ZERO),
     ));
 
