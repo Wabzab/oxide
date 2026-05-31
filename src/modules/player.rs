@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::modules::collision::Collidable;
+
 const PLAYER_SPEED: f32 = 200.0;
 const CAMERA_DECAY_RATE: f32 = 5.0;
 pub const PLAYER_SIZE: f32 = 24.0;
@@ -26,6 +28,7 @@ fn setup(mut commands: Commands) {
             ..default()
         },
         Transform::from_translation(Vec3::ZERO),
+        Collidable { size: PLAYER_SIZE },
     ));
 
     // Spawn the cameraman

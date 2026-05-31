@@ -12,6 +12,9 @@ struct GameWorld {
     noise_generator: Fbm<Perlin>,
 }
 
+#[derive(Component)]
+pub struct Tile;
+
 pub struct TerrainPlugin;
 
 impl Plugin for TerrainPlugin {
@@ -36,13 +39,14 @@ fn setup(mut commands: Commands, world: Res<GameWorld>) {
                 let x = start_x + col_x as f32 * TILE_SIZE;
                 let y = start_y + col_y as f32 * TILE_SIZE;
                 commands.spawn((
+                    Tile,
                     Sprite {
                         custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                         color: Color::hsl((360.0 * (val + 1.0) / 2.0) as f32, 0.5, 0.5),
                         ..default()
                     },
                     Transform::from_translation(Vec3::new(x, y, -1.0)),
-                    Collidable,
+                    Collidable { size: TILE_SIZE },
                 ));
             }
         }

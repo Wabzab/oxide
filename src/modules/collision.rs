@@ -1,10 +1,12 @@
-use crate::modules::player::{PLAYER_SIZE, Player};
-use crate::modules::terrain::TILE_SIZE;
+use crate::modules::player::Player;
+use crate::modules::terrain::Tile;
 use bevy::math::bounding::{Aabb2d, BoundingVolume, IntersectsVolume};
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Collidable;
+pub struct Collidable {
+    pub size: f32,
+}
 
 pub struct CollisionPlugin;
 
@@ -15,26 +17,28 @@ impl Plugin for CollisionPlugin {
 }
 
 fn collision_system(
-    mut player_transform: Single<&mut Transform, (With<Player>, Without<Collidable>)>,
-    mut collidable_query: Query<&Transform, (With<Collidable>, Without<Player>)>,
+    player_query: Single<(&mut Transform, &Collidable), (With<Player>, Without<Tile>)>,
+    mut tile_query: Query<(&Transform, &Collidable), (With<Tile>, Without<Player>)>,
 ) {
-    for collidable_transform in &mut collidable_query {
+    let (mut player_transform, player_collidable) = player_query.into_inner();
+
+    for (tile_transform, tile_collidable) in &mut tile_query {
         let player_bb = Aabb2d::new(
             player_transform.translation.truncate(),
-            PLAYER_SIZE * 0.5 * player_transform.scale.truncate().abs(),
+            player_collidable.size * 0.5 * player_transform.scale.truncate().abs(),
         );
 
-        let collidable_bb = Aabb2d::new(
-            collidable_transform.translation.truncate(),
-            TILE_SIZE * 0.5 * collidable_transform.scale.truncate().abs(),
+        let tile_bb = Aabb2d::new(
+            tile_transform.translation.truncate(),
+            tile_collidable.size * 0.5 * tile_transform.scale.truncate().abs(),
         );
 
-        if !collidable_bb.intersects(&player_bb) {
+        if !tile_bb.intersects(&player_bb) {
             continue;
         };
 
-        let delta = player_bb.center() - collidable_bb.center();
-        let combined = player_bb.half_size() + collidable_bb.half_size();
+        let delta = player_bb.center() - tile_bb.center();
+        let combined = player_bb.half_size() + tile_bb.half_size();
         let overlap = combined - delta.abs(); // both components > 0 when intersecting
 
         if overlap.x < overlap.y {
