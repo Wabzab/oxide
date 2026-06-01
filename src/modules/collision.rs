@@ -1,5 +1,5 @@
 use crate::modules::player::Player;
-use crate::modules::terrain::Tile;
+use crate::modules::terrain::{Tile, spawn_floor_tile};
 use bevy::math::bounding::{Aabb2d, BoundingVolume, IntersectsVolume};
 use bevy::prelude::*;
 
@@ -8,11 +8,21 @@ pub struct Collidable {
     pub size: f32,
 }
 
+#[derive(Component)]
+pub struct Breakable {
+    pub health: f32,
+}
+
+#[derive(Component)]
+pub struct Breaker {
+    pub damage: f32,
+}
+
 pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, collision_system);
+        app.add_systems(Update, (collision_system, breaking_system));
     }
 }
 
@@ -46,5 +56,28 @@ fn collision_system(
         } else {
             player_transform.translation.y += overlap.y * delta.y.signum();
         }
+    }
+}
+
+fn breaking_system(
+    mut breakable_query: Query<(Entity, &Transform, &mut Breakable), Without<Breaker>>,
+    breaker_query: Query<(Entity, &Transform, &Breaker), Without<Breakable>>,
+    mut commands: Commands,
+) {
+    for (breaker_entity, breaker_transform, breaker) in breaker_query {
+        for (breakable_entity, breakable_transform, mut breakable) in &mut breakable_query {
+            let distance = breaker_transform
+                .translation
+                .truncate()
+                .distance(breakable_transform.translation.truncate());
+            if distance < 48.0 {
+                breakable.health -= breaker.damage;
+                if breakable.health <= 0.0 {
+                    spawn_floor_tile(&mut commands, breakable_transform.translation.truncate());
+                    commands.entity(breakable_entity).despawn();
+                }
+            }
+        }
+        commands.entity(breaker_entity).despawn();
     }
 }

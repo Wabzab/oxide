@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::modules::collision::Collidable;
+use crate::modules::collision::{Breaker, Collidable};
 
 const PLAYER_SPEED: f32 = 200.0;
 const CAMERA_DECAY_RATE: f32 = 5.0;
@@ -14,7 +14,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, (move_player, move_camera));
+        app.add_systems(Update, (move_player, move_camera, hulk_smash));
     }
 }
 
@@ -74,4 +74,17 @@ fn move_camera(
     camera
         .translation
         .smooth_nudge(&direction, CAMERA_DECAY_RATE, time.delta_secs());
+}
+
+fn hulk_smash(
+    mut commands: Commands,
+    input: Res<ButtonInput<KeyCode>>,
+    transform: Single<&Transform, With<Player>>,
+) {
+    if input.just_pressed(KeyCode::Space) {
+        commands.spawn((
+            Breaker { damage: 1.0 },
+            Transform::from_translation(transform.translation),
+        ));
+    }
 }
