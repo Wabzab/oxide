@@ -1,4 +1,4 @@
-use crate::modules::collision::{Breakable, Collidable};
+use crate::modules::collision::{Collidable, Death, Health, Shape};
 use bevy::prelude::*;
 use noise::{
     Fbm, OpenSimplex,
@@ -16,6 +16,20 @@ pub struct TerrainPlugin;
 impl Plugin for TerrainPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
+        app.add_observer(on_block_death);
+    }
+}
+
+// When a breakable tile dies, leave a floor tile behind. The With<Tile> guard means only
+// blocks react here; other Death sources (e.g. future enemies) are simply ignored.
+fn on_block_death(
+    death: On<Death>,
+    blocks: Query<&Transform, With<Tile>>,
+    mut commands: Commands,
+) {
+    if let Ok(transform) = blocks.get(death.entity) {
+        spawn_floor_tile(&mut commands, transform.translation.truncate());
+        commands.entity(death.entity).despawn();
     }
 }
 
@@ -78,8 +92,10 @@ pub fn spawn_wall_tile(commands: &mut Commands, translation: Vec2) {
             color: Color::hsl(165.0, 0.1, 0.35), // Light blue
             ..default()
         },
-        Collidable { size: TILE_SIZE },
-        Breakable { health: 1.0 },
+        Collidable {
+            shape: Shape::square(TILE_SIZE),
+        },
+        Health::new(1.0),
     ));
 }
 
@@ -92,7 +108,9 @@ pub fn spawn_ore_tile(commands: &mut Commands, translation: Vec2) {
             color: Color::hsl(45.0, 0.7, 0.25), // Golden
             ..default()
         },
-        Collidable { size: TILE_SIZE },
-        Breakable { health: 3.0 },
+        Collidable {
+            shape: Shape::square(TILE_SIZE),
+        },
+        Health::new(3.0),
     ));
 }
