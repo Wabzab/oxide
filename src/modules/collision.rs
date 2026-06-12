@@ -1,5 +1,5 @@
+use crate::modules::map::Tile;
 use crate::modules::player::Player;
-use crate::modules::terrain::Tile;
 use bevy::math::bounding::{Aabb2d, BoundingCircle, BoundingVolume, IntersectsVolume};
 use bevy::prelude::*;
 
@@ -98,7 +98,7 @@ pub struct ContactDamage {
 pub struct DespawnOnHit;
 
 // Decoupled death signal. The field named `entity` is the EntityEvent target, so reaction
-// systems in other modules (e.g. terrain turning a dead block into floor) observe it without
+// systems in other modules (e.g. the map turning a dead block into floor) observe it without
 // this module knowing anything about them.
 #[derive(EntityEvent)]
 pub struct Death {
