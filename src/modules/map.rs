@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 pub const TILE_SIZE: f32 = 32.0;
 pub const CHUNK_SIZE: i32 = 8; // cells per chunk edge
 const CHUNK_CELLS: usize = (CHUNK_SIZE * CHUNK_SIZE) as usize; // 64
-const DEFAULT_RENDER_DISTANCE: i32 = 3; // N: loaded area is N x N chunks, centered on the player. Keep odd.
+const DEFAULT_RENDER_DISTANCE: i32 = 6; // N: loaded area is N x N chunks, centered on the player. Keep odd.
 const CARVE_RADIUS: i32 = 4; // cells, half-extent of the square clearing around the spawn origin
 
 // The two layers store one cell value each. Floor is the walkable ground that exists everywhere;
